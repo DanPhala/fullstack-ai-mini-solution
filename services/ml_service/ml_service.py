@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import joblib
 from sqlalchemy import text
@@ -14,8 +15,9 @@ class MLService:
     async def train_and_persist_model(self, rows) -> TrainResponse:
         x, y = rows_to_array(rows)
         model, acc = train_model(x, y)
-        Path("ML/models").mkdir(parents=True, exist_ok=True)
-        model_path = "ML/models/model.pkl"
+        models_dir = os.getenv("MODELS_DIR", "ML/models/")
+        Path(models_dir).mkdir(parents=True, exist_ok=True)
+        model_path = os.path.join(models_dir, "model.pkl")
         joblib.dump(model, model_path)
         async with AsyncDatabase.get_database() as session:
             registry = ModelRegistry(

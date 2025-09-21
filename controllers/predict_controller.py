@@ -20,6 +20,8 @@ async def train_model(payload: TrainPayload) -> TrainResponse:
 
 @router.post("/v1/predict", response_model=PredictResponse)
 async def predict(payload: PredictPayload) -> PredictResponse:
+    if not ((payload.features) or (payload.user_id and payload.date)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Either features or user_id and date must be provided.")
     try:
         prediction = await ml_service.predict(payload)
         return prediction

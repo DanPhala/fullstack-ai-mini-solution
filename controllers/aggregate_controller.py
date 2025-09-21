@@ -6,6 +6,8 @@ from services.event_service import EventService
 from models.request.daily_aggregate import AggregateRequest
 from models.response.daily_aggregate import AggregateResponse
 from services.daily_aggregates_service import DailyAggregatesService
+from controllers.stream_controller import user_event_queues
+import asyncio
 # from models.response.daily_aggregate import DailyAggregateResponse
 from datetime import date
 from uuid import UUID
@@ -22,6 +24,17 @@ async def compute_daily_aggregate(user_id: UUID, payload: AggregateRequest) -> A
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User ID cannot be empty")
     try:
         result = await service.compute_aggregate_service(user_id, payload.date)
+
+        #streaming
+        queue = user_event_queues.setdefault(str(user_id), asyncio.Queue())
+        await queue.put({
+            "user_id": str(user_id),
+            "steps_total": result.steps_total,
+            "hr_avg": result.hr_avg,
+            "sleep_minutes": result.sleep_minutes,
+            "computed_at": str(result.computed_at)
+        })
+
         return result
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
