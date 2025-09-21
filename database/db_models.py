@@ -13,7 +13,7 @@ class Events(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
-    event_type = Column(String, nullable=False)  # you’ll validate enum in Pydantic
+    event_type = Column(String, nullable=False) 
     value = Column(Numeric, nullable=False)
 
 class DailyAggregate(Base):
