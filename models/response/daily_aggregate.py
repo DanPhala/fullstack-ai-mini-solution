@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,ConfigDict
 from uuid import UUID
 
 class AggregateResponse(BaseModel):
@@ -7,3 +7,5 @@ class AggregateResponse(BaseModel):
     hr_avg: float | None
     sleep_minutes: int
     computed_at: str
+
+    model_config = ConfigDict(from_attributes=True)

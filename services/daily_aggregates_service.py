@@ -4,7 +4,7 @@ from models.response.daily_aggregate import AggregateResponse
 from uuid import UUID
 from sqlalchemy import select, func
 from sqlalchemy.dialects.postgresql import insert
-from datetime import datetime
+from datetime import datetime, date
 
 class DailyAggregatesService:
     def __init__(self):
@@ -79,4 +79,8 @@ class DailyAggregatesService:
                 sleep_minutes=int(sleep_minutes),
                 computed_at=str(date)
             )
-    
+
+    async def get_daily_aggregate(self, user_id: UUID, date: date):
+        async with AsyncDatabase.get_database() as session:
+            result = await session.get(DailyAggregate, {"user_id": user_id, "date": date})
+            return result
