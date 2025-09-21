@@ -79,5 +79,4 @@ Set in `docker-compose.yml`:
 
 ---
 
-## 📝 License
-MIT
+
