@@ -13,6 +13,18 @@ services:
       - database
     restart: always
 
+  test:
+    build: .
+    command: pytest tests/
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@database:5432/postgres
+      - MODELS_DIR=ML/models/
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+    depends_on:
+      - database
+
   pgadmin:
     image: dpage/pgadmin4
     environment:
