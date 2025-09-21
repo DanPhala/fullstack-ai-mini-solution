@@ -35,5 +35,4 @@ async def get_daily_aggregate(user_id: UUID, date: date):
     result = await service.get_daily_aggregate(user_id, date)
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Daily aggregate not found")
-    # return DailyAggregateResponse.model_validate(result) 
     return result
