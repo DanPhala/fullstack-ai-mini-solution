@@ -1,12 +1,34 @@
 from database.database_connection import AsyncDatabase
-from database.db_models import Events
+from database.db_models import Events, DailyAggregate
 from models.response.daily_aggregate import AggregateResponse
 from uuid import UUID
 from sqlalchemy import select, func
+from sqlalchemy.dialects.postgresql import insert
+from datetime import datetime
 
 class DailyAggregatesService:
     def __init__(self):
         pass
+    
+    async def upsert_daily_aggregate(self,session, user_id, date_obj, steps_total, hr_avg, sleep_minutes, computed_at):
+        upsert_data = insert(DailyAggregate).values(
+            user_id=user_id,
+            date=date_obj,
+            steps_total=steps_total,
+            hr_avg=hr_avg if hr_avg is not None else 0.0,
+            sleep_minutes=sleep_minutes,
+            computed_at=computed_at
+        ).on_conflict_do_update(
+            index_elements=['user_id', 'date'],
+            set_={
+                'steps_total': steps_total,
+                'hr_avg': hr_avg,
+                'sleep_minutes': sleep_minutes,
+                'computed_at': computed_at
+            }
+        )
+        await session.execute(upsert_data)
+        await session.commit()
 
     async def compute_aggregate_service(self, user_id: UUID, date):
         date_str = date.strftime('%Y-%m-%d')
@@ -38,6 +60,17 @@ class DailyAggregatesService:
             sleep_total_result = await session.execute(sleep_total_query)
             sleep_minutes = sleep_total_result.scalar() or 0
 
+            #upserting daily results
+            await self.upsert_daily_aggregate(
+                session,
+                user_id,
+                date,
+                int(steps_total),
+                hr_avg,
+                int(sleep_minutes),
+                datetime.utcnow()
+            )
+
             return AggregateResponse(
                 user_id=user_id,
                 date=date,
@@ -46,3 +79,4 @@ class DailyAggregatesService:
                 sleep_minutes=int(sleep_minutes),
                 computed_at=str(date)
             )
+    
