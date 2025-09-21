@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database.database_connection import get_database, Base, engine
-from database.db_model import User  
+from database.db_models import Events, DailyAggregate, ModelRegistry 
 
 Base.metadata.create_all(bind=engine)
 
@@ -24,7 +24,7 @@ def root():
 @app.get("/health")
 def health_check(db: Session = Depends(get_database)):
     try:
-        res = db.execute(text("SELECT * FROM users"))
+        res = db.execute(text("SELECT * FROM events"))
         rows = res.fetchall()
         results = [dict(row._mapping) for row in rows]
         return {"results": results, "database": "healthy"}
